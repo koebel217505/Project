@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang= zh-tw>
+<head>
+    <title>NewMoney</title>
+    <meta charset="UTF-8">
+    <link type="text/css" rel="stylesheet" href="./bootstrap.min.css"/>
+    <link type="text/css" rel="stylesheet" href="./bootstrap-vue.min.css"/>
+	<link type="text/css" rel="stylesheet" href="./index.css"/>
+    <script src="./vue.min.js"></script>
+    <script src="./bootstrap-vue.min.js"></script>
+</head>
+<body onload=start()>
+<div id="app">
+    <div id="Menu">
+        <b-card no-body>
+            <b-tabs v-model="tabIndex" pills card vertical>
+                <b-tab title="連線" active>
+<!--                    <b-button variant="outline-dark" v-b-tooltip.hover v-bind:title="SQLIP">-->
+<!--                        SQL{{ SQLStatus }}-->
+<!--                    </b-button>-->
+                    <b-table striped hover Bordered Outlined :items="items" :fields="fields"></b-table>
+                </b-tab>
+<!--                <b-tab title="清除">-->
+<!--                    <div class="clearfix">-->
+<!--                        <div id="ClearPlayer" class="d-flex justify-content-center">-->
+<!--                            <b-button href="#" variant="primary" @click="comfirmPassWord('clearPlayer')">清除所有玩家資料</b-button>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </b-tab>-->
+            </b-tabs>
+        </b-card>
+        <div class="text-center">
+            <b-button-group class="mt-2">
+                <b-button @click="tabIndex--">Previous</b-button>
+                <b-button @click="tabIndex++">Next</b-button>
+            </b-button-group>
+
+            <div class="text-muted">Current Tab: {{ tabIndex }}</div>
+        </div>
+    </div>
+    </div>
+</div>
+
+<link href="./vuejs-dialog.min.css" rel="stylesheet">
+<script type="text/javascript" src="./vuejs-dialog.min.js"></script>
+<script type="text/javascript" src="./vuejs-dialog-mixin.min.js"></script>
+<script type="text/javascript" src="./lodash.min.js"></script>
+
+<script>
+    window.Vue.use(VuejsDialog.main.default)
+
+    var app = new Vue({
+        el: '#app',
+        data: {
+            tabIndex: 1,
+            // SQLIP: '',
+            // SQLStatus: '未連線',
+            fields: [{
+                key: 'ID',
+                sortable: true
+            }, {
+                key: 'IP',
+                sortable: true
+            },{
+                key: 'Status',
+                sortable: true
+            },],
+            items: [
+            ]
+        },
+        beforeUpdate: function() {
+            console.log("beforeUpdate")
+        },
+        updated: function() {
+            console.log("updated")
+        },
+        methods: {
+            alertfuc: function(message) {
+                this.boxOne = ''
+                this.$bvModal.msgBoxOk(message)
+                        .then(value => {
+                            this.boxOne = value
+                        })
+                        .catch(err => {
+                            // An error occurred
+                        })
+            },
+            comfirmPassWord: function(message) {
+                let options = {
+                    html: false, // set to true if your message contains HTML tags. eg: "Delete <b>Foo</b> ?"
+                    loader: false, // set to true if you want the dailog to show a loader after click on "proceed"
+                    reverse: false, // switch the button positions (left to right, and vise versa)
+                    okText: 'Continue',
+                    cancelText: 'Close',
+                    animation: 'zoom', // Available: "zoom", "bounce", "fade"
+                    type: 'soft', // coming soon: 'soft', 'hard'
+                    verification: 'continue', // for hard confirm, user will be prompted to type this to enable the proceed button
+                    verificationHelp: 'Type "[+:verification]" below to confirm', // Verification help text. [+:verification] will be matched with 'options.verification' (i.e 'Type "continue" below to confirm')
+                    clicksCount: 10, // for soft confirm, user will be asked to click on "proceed" btn 3 times before actually proceeding
+                    backdropClose: false, // set to true to close the dialog when clicking outside of the dialog window, i.e. click landing on the mask
+                    customClass: '' // Custom class to be injected into the parent node for the current dialog instance
+                };
+
+                this.$dialog.confirm(message, options)
+                        .then( ()  => {
+                                    console.log("confirm:" + message)
+                                    this.send(message)
+                                 }
+                        )
+                        .catch(function () {
+
+                        });
+            },
+            send: async (message) => {
+                console.log("UIMsg:" + await window.UIMsg(message))
+            },
+            setItems: function(value){
+                this.items.forEach(function(item, index, array){
+                    if (value["ID"] === item["ID"]) {
+                        // if (_.isEqual(value, item)) {
+                        //     return item;
+                        // } else {
+                            for (var prop in item) {
+                                item[prop] = value[prop];
+                            }
+
+                            return item;
+                        // }
+                    } else {
+                        return item;
+                    }
+                })
+            }
+        }
+    })
+</script>
+</body>
+</html>
