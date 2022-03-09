@@ -11,7 +11,7 @@ import (
 var eventHandler *EventHandler = nil
 
 // EventFunc bla-bla
-type EventFunc func(s Session, e *EventBuffer)
+type EventFunc func(s *Session, e *EventBuffer)
 
 //type BytesToStructFunc func(b *EventBuffer) (e *EventMsg)
 

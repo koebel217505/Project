@@ -13,7 +13,7 @@ import (
 	"path/filepath"
 )
 
-func uiStart(c context.Context, closeCh *projChannel.Channel) {
+func uiStart(c context.Context, closeCh *projChannel.Channel, eventCh *projChannel.Channel) {
 	var args []string
 	var err error
 	projVar.UI, err = lorca.New("", "", 750, 750, args...)

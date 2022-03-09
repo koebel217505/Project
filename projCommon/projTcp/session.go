@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/gogf/gf/g/container/gtype"
+	"github.com/koebel217505/Project/projCommon/projChannel"
 	"github.com/koebel217505/Project/projCommon/projPacket"
 	"io"
 	"log"
@@ -12,126 +13,67 @@ import (
 	"time"
 )
 
-type Test struct {
-	A int8
-	B int16
-	C int32
-}
-
-type Session interface {
-	RemoteAddr() string
-	LocalAddr() string
-	Start()
-	Close()
-	Send(b []byte)
-	PushEvent(event func())
-
-	GetID() int32
-	SetID(value int32)
-
-	GetBuffer() []byte
-
-	GetConn() net.Conn
-
-	//SetGMap(value *gmap.Map)
-	//GetGMap() *gmap.Map
-
-	SetData(value any)
-	GetData() any
-
-	//Get(k string) any
-	//GetOrSetFunc(key any, f func() interface{}) any
-	//SetSessionID(value int32)
-	//GetSessionID() int32
+type AddrInfo struct {
+	ID      uint64
+	Name    string
+	TCPAddr *net.TCPAddr
 }
 
 // Session 代表一个连接会话
-type session struct {
-	id           int32
-	conn         net.Conn
-	sendChan     chan []byte
-	buffer       []byte
-	wg           *sync.WaitGroup
-	eventChan    chan func()
-	eventHandler *EventHandler
-	userHandler  UserHandler
-
-	data any
-	//gMap          *gmap.Map
+type Session struct {
+	id            int32
+	conn          net.Conn
+	sendChan      chan []byte
+	buffer        []byte
+	wg            *sync.WaitGroup
+	eventCh       *projChannel.Channel
+	eventHandler  *EventHandler
+	userHandler   UserHandler
+	data          any
 	isReConn      gtype.Bool
 	closeOnce     sync.Once
 	readDeadline  time.Time
 	writeDeadline time.Time
-	//sessionID     gtype.Int32
-	isClosed gtype.Bool
+	isClosed      gtype.Bool
 }
 
-func (s *session) GetConn() net.Conn {
+func (s *Session) GetConn() net.Conn {
 	return s.conn
 }
 
-func (s *session) GetBuffer() []byte {
+func (s *Session) GetBuffer() []byte {
 	return s.buffer
 }
 
-func (s *session) GetID() int32 {
+func (s *Session) GetID() int32 {
 	return s.id
 }
 
-func (s *session) SetID(value int32) {
+func (s *Session) SetID(value int32) {
 	s.id = value
 }
 
-func (s *session) SetData(value any) {
+func (s *Session) SetData(value any) {
 	s.data = value
 }
 
-func (s *session) GetData() any {
+func (s *Session) GetData() any {
 	return s.data
 }
 
-//func (s *session) SetGMap(value *gmap.Map) {
-//	if s.gMap != nil {
-//		s.gMap.Clear()
-//		s.gMap = nil
-//	}
-//
-//	s.gMap = value
-//}
-//
-//func (s *session) GetGMap() *gmap.Map {
-//	return s.gMap
-//}
-//
-//func (s *session) Get(key string) any {
-//	return s.gMap.Get(key)
-//}
-//
-//func (s *session) GetOrSetFunc(key any, f func() interface{}) any {
-//	return s.gMap.GetOrSetFunc(key, f)
-//}
-
-//func (s *session) SetSessionID(value int32) {
-//	s.sessionID.Set(value)
-//}
-//
-//func (s *session) GetSessionID() int32 {
-//	return s.sessionID.Val()
-//}
-
-func (s *session) SetReadDeadline(value time.Time) {
+func (s *Session) SetReadDeadline(value time.Time) {
 	s.readDeadline = value
 }
 
-func (s *session) GetReadDeadline() time.Time {
+func (s *Session) GetReadDeadline() time.Time {
 	return s.readDeadline
 }
 
-func (s *session) SetWriteDeadline(value time.Time) {
+func (s *Session) SetWriteDeadline(value time.Time) {
 	s.writeDeadline = value
 }
 
-func (s *session) GetWriteDeadline() time.Time {
+func (s *Session) GetWriteDeadline() time.Time {
 	return s.writeDeadline
 }
 
@@ -148,40 +90,40 @@ type EventMsg struct {
 }
 
 // RemoteAddr 返回客户端的地址和端口
-func (s *session) RemoteAddr() string {
+func (s *Session) RemoteAddr() string {
 	return s.conn.RemoteAddr().String()
 }
 
 // LocalAddr 返回本機地址和端口
-func (s *session) LocalAddr() string {
+func (s *Session) LocalAddr() string {
 	return s.conn.LocalAddr().String()
 }
 
 // Start 開始
-func (s *session) Start() {
+func (s *Session) Start() {
 	func() {
 		s.wg.Add(1)
 		go s.receiveThread()
 		s.wg.Add(1)
 		go s.sendThread()
-		s.wg.Add(1)
-		go s.eventThread()
+		//s.wg.Add(1)
+		//go s.eventThread()
 	}()
 }
 
 // Close 關閉連接
-func (s *session) Close() {
+func (s *Session) Close() {
 	s.closeOnce.Do(s.close)
 }
 
-func (s *session) close() {
+func (s *Session) close() {
 	//s.conn.Close()
 	s.isClosed.Set(true)
-	close(s.eventChan)
+	//close(s.eventChan)
 	//s.SetReadDeadline(time.Now().Add(0))
 }
 
-func (s *session) receiveThread() {
+func (s *Session) receiveThread() {
 	defer s.wg.Done()
 
 	if s.isReConn.Val() == false {
@@ -222,7 +164,7 @@ func (s *session) receiveThread() {
 	s.Close()
 }
 
-func (s *session) sendThread() {
+func (s *Session) sendThread() {
 	defer s.wg.Done()
 
 	for msg := range s.sendChan {
@@ -243,33 +185,31 @@ func (s *session) sendThread() {
 	}
 }
 
-// eventThread bla-bla
-func (s *session) eventThread() {
-	defer s.wg.Done()
-
-	for event := range s.eventChan {
-		event()
-	}
-
-	close(s.sendChan)
-}
+//// eventThread bla-bla
+//func (s *Session) eventThread() {
+//	defer s.wg.Done()
+//
+//	for event := range s.eventChan {
+//		event()
+//	}
+//
+//	close(s.sendChan)
+//}
 
 // Send 發送數據
-func (s *session) Send(b []byte) {
+func (s *Session) Send(b []byte) {
 	if s.isClosed.Val() == false {
 		s.sendChan <- b
 	}
 }
 
 //PushEvent 使用者事件
-func (s *session) PushEvent(event func()) {
-	if s.eventChan != nil {
-		s.eventChan <- event
-	}
+func (s *Session) PushEvent(event func()) {
+	s.eventCh.Push(event)
 }
 
 // Decode bla-bla
-func (s *session) Decode() (e *EventBuffer, err error) {
+func (s *Session) Decode() (e *EventBuffer, err error) {
 	reader := s.GetConn().(io.Reader)
 	buffer := s.GetBuffer()
 
@@ -318,20 +258,20 @@ func (s *session) Decode() (e *EventBuffer, err error) {
 }
 
 // Encode bla-bla
-func (s *session) Encode(b []byte) (r *projPacket.Packet, err error) {
+func (s *Session) Encode(b []byte) (r *projPacket.Packet, err error) {
 
 	return
 }
 
 // NewSession 生成一个新的Session
-func NewSession(conn net.Conn, userHandler UserHandler, wg *sync.WaitGroup, isReConn gtype.Bool, eventHandler *EventHandler, eventChan chan func()) (result Session) {
-	result = &session{
+func NewSession(conn net.Conn, userHandler UserHandler, wg *sync.WaitGroup, isReConn gtype.Bool, eventHandler *EventHandler, eventCh *projChannel.Channel) (result *Session) {
+	result = &Session{
 		conn:     conn,
 		sendChan: make(chan []byte, 100),
 		buffer:   make([]byte, 1024*8),
 		wg:       wg,
 		//eventChan:    make(projChannel func(), 10000),
-		eventChan:    eventChan,
+		eventCh:      eventCh,
 		userHandler:  userHandler,
 		eventHandler: eventHandler,
 		isReConn:     isReConn,
@@ -340,8 +280,8 @@ func NewSession(conn net.Conn, userHandler UserHandler, wg *sync.WaitGroup, isRe
 	return result
 }
 
-func NewSessionNoCon(value any) (result Session) {
-	result = &session{
+func NewSessionNoCon(value any) (result *Session) {
+	result = &Session{
 		data: value,
 	}
 

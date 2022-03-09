@@ -1,0 +1,9 @@
+proxy:
+  - addrInfo:
+    ID: 1
+    Name: Proxy
+    IP: 127.0.0.1:7099
+  - addrInfo:
+    ID: 2
+    Name: Proxy
+    IP: 127.0.0.1:7099

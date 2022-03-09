@@ -237,36 +237,6 @@ func (p *Packet) WriteReStruct(v any) error {
 	return err
 }
 
-//func Uint64ToBytes(v uint64) []byte {
-//	b := make([]byte, 8)
-//	binary.LittleEndian.PutUint64(b, v)
-//	return b
-//}
-//
-//func Uint32ToBytes(v uint32) []byte {
-//	b := make([]byte, 4)
-//	binary.LittleEndian.PutUint32(b, v)
-//	return b
-//}
-//
-//func Uint16ToBytes(v uint16) []byte {
-//	b := make([]byte, 2)
-//	binary.LittleEndian.PutUint16(b, v)
-//	return b
-//}
-//
-//func BytesToUint64(b []byte) uint64 {
-//	return binary.LittleEndian.Uint64(b)
-//}
-//
-//func BytesToUint32(b []byte) uint32 {
-//	return binary.LittleEndian.Uint32(b)
-//}
-//
-//func BytesToUint16(b []byte) uint16 {
-//	return binary.LittleEndian.Uint16(b)
-//}
-
 func newPool() *Pool {
 	return &Pool{Pool: &sync.Pool{New: func() any { return newPacket() }}}
 }

@@ -27,7 +27,7 @@ func (s *SeatArray) IsNil(index int32) bool {
 
 // isRange bla-bla
 func (s *SeatArray) isRange(index int32) bool {
-	return index <= 0 || index > s.max
+	return !(index <= 0 || index > s.max)
 }
 
 // len bla-bla
@@ -147,8 +147,8 @@ func (s *SeatArray) ForEach(callback func(key any, value any)) {
 	}
 }
 
-// NewSeatArray bla-bla
-func NewSeatArray(max int32) *SeatArray {
+// New bla-bla
+func New(max int32) *SeatArray {
 	if max == 0 {
 		return nil
 	}

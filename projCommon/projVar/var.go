@@ -5,6 +5,6 @@ import (
 	"github.com/zserge/lorca"
 )
 
-var Server projTcp.BaseServer
-var Client projTcp.BaseClient
+var Server *projTcp.BaseServer
+var Client *projTcp.BaseClient
 var UI lorca.UI

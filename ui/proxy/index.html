@@ -15,18 +15,8 @@
         <b-card no-body>
             <b-tabs v-model="tabIndex" pills card vertical>
                 <b-tab title="連線" active>
-<!--                    <b-button variant="outline-dark" v-b-tooltip.hover v-bind:title="SQLIP">-->
-<!--                        SQL{{ SQLStatus }}-->
-<!--                    </b-button>-->
                     <b-table striped hover Bordered Outlined :items="items" :fields="fields"></b-table>
                 </b-tab>
-<!--                <b-tab title="清除">-->
-<!--                    <div class="clearfix">-->
-<!--                        <div id="ClearPlayer" class="d-flex justify-content-center">-->
-<!--                            <b-button href="#" variant="primary" @click="comfirmPassWord('clearPlayer')">清除所有玩家資料</b-button>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </b-tab>-->
             </b-tabs>
         </b-card>
         <div class="text-center">
@@ -53,8 +43,6 @@
         el: '#app',
         data: {
             tabIndex: 1,
-            // SQLIP: '',
-            // SQLStatus: '未連線',
             fields: [{
                 key: 'ID',
                 sortable: true
@@ -117,15 +105,10 @@
             setItems: function(value){
                 this.items.forEach(function(item, index, array){
                     if (value["ID"] === item["ID"]) {
-                        // if (_.isEqual(value, item)) {
-                        //     return item;
-                        // } else {
-                            for (var prop in item) {
-                                item[prop] = value[prop];
-                            }
-
-                            return item;
-                        // }
+                        for (const prop in item) {
+                            item[prop] = value[prop];
+                        }
+                        return item;
                     } else {
                         return item;
                     }

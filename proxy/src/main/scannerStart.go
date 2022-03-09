@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func scannerStart(c context.Context, closeCh *projChannel.Channel) {
+func scannerStart(c context.Context, closeCh *projChannel.Channel, eventCh *projChannel.Channel) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		//fmt.Println(scanner.Text())

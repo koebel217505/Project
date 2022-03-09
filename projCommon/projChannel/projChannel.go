@@ -52,8 +52,8 @@ func (c *Channel) Cap() int {
 	return cap(c.ch)
 }
 
-// NewChannel bla-bla
-func NewChannel(limit int) *Channel {
+// New bla-bla
+func New(limit int) *Channel {
 	return &Channel{
 		ch:     make(chan interface{}, limit),
 		closed: gtype.NewBool(),
